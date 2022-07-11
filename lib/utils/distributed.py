@@ -69,11 +69,11 @@ def init_dist_node(args):
         args.world_size = int(os.getenv('SLURM_NNODES')) * args.ngpus_per_node
             
     else:
-
+        #Initialization on local machine with multiple GPUs
         os.environ['CUDA_VISIBLE_DEVICES'] = args.gpus
         args.ngpus_per_node = torch.cuda.device_count()
 
-        args.rank = 0
+        args.rank = 0 #This is the main process
         args.dist_url = f'tcp://localhost:{args.port}'
         args.world_size = args.ngpus_per_node
 
@@ -85,14 +85,15 @@ def init_dist_gpu(gpu, args):
         args.gpu = job_env.local_rank
         args.rank = job_env.global_rank
     else:
+        #Initialization on local machine - child process with multiple GPUs
         args.gpu = gpu
-        args.rank += gpu
+        args.rank += gpu #This is the child process
 
     dist.init_process_group(backend='gloo', init_method=args.dist_url, world_size=args.world_size, rank=args.rank)
-    fix_random_seeds()
+    fix_random_seeds() #Set the seed on all GPUs to be the same for random parameter initialization
     torch.cuda.set_device(args.gpu)
     cudnn.benchmark = True
-    dist.barrier()
+    dist.barrier() #Wait for all child process
 
     args.main = (args.rank == 0)
     setup_for_distributed(args.main)

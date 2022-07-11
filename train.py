@@ -118,6 +118,7 @@ class SLURM_Trainer(object):
     def __init__(self, args):
         self.args = args
 
+    #The submitit.AutoExecutor object's submit method will spawn the __call__ function on multiple GPUs of multiple nodes.
     def __call__(self):
 
         init_dist_node(self.args)
@@ -129,13 +130,20 @@ def main():
     args = parse_args()
     args.port = random.randint(49152,65535)
     
+    #Training with Slurm
     if args.slurm:
 
         # Almost copy-paste from https://github.com/facebookresearch/deit/blob/main/run_with_submitit.py
         args.output_dir = get_shared_folder() / "%j"
         Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+        
+        #Initialize a submitit.AutoExecutor object
         executor = submitit.AutoExecutor(folder=args.output_dir, slurm_max_num_timeout=30)
 
+        #Create a distributed GPU job script and submit it to Slurm
+        #Spawning the different processes on the GPUs of different nodes
+        # What is 12? Why is it 12?
+        # How about qos?
         executor.update_parameters(
             mem_gb=12*args.slurm_ngpus,
             gpus_per_node=args.slurm_ngpus,
@@ -150,7 +158,10 @@ def main():
             executor.update_parameters(slurm_additional_parameters = {"nodelist": f'{args.slurm_nodelist}' })
 
         executor.update_parameters(name=args.model)
+        #Initialize a SLURM_Trainer object
         trainer = SLURM_Trainer(args)
+
+        #Pass the trainer to submitit.AutoExecutor object's submit method.
         job = executor.submit(trainer)
         print(f"Submitted job_id: {job.job_id}")
 
@@ -163,6 +174,7 @@ def main():
 def train(gpu, args):
 
     # === SET ENV === #
+    # Define the local rank, global rank, world size
     init_dist_gpu(gpu, args)
     
     # === DATA === #
