@@ -93,6 +93,10 @@ def parse_args():
                                             help='slurm nodeslist. i.e. "GPU17,GPU18"')
     parser.add_argument('-slurm_partition', type=str, default = "general",
                                             help='slurm partition')
+    
+    parser.add_argument('-slurm_qos', type=str, default = "preemption_short",
+                                            help='slurm quality of service')
+
     parser.add_argument('-slurm_timeout', type=int, default = 2800,
                                             help='slurm timeout minimum, reduce if running on the "Quick" partition')
 
