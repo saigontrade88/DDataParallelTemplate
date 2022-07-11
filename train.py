@@ -157,6 +157,9 @@ def main():
         if args.slurm_nodelist:
             executor.update_parameters(slurm_additional_parameters = {"nodelist": f'{args.slurm_nodelist}' })
 
+        if args.slurm_qos:
+            executor.update_parameters(slurm_additional_parameters = {"qos": f'{args.slurm_qos}' })
+
         executor.update_parameters(name=args.model)
         #Initialize a SLURM_Trainer object
         trainer = SLURM_Trainer(args)
