@@ -41,8 +41,8 @@ def fix_random_seeds(seed=31):
 
 def get_shared_folder() -> Path:
     user = os.getenv("USER")
-    if Path("/data/sarkar-vision/slurm_jobs/").is_dir():
-        p = Path(f"/data/sarkar-vision/slurm_jobs/{user}")
+    if Path("/work_bgfs/l/longdang/DataParallel_Pytorch/").is_dir():
+        p = Path(f"/work_bgfs/l/longdang/DataParallel_Pytorch/{user}")
         p.mkdir(exist_ok=True)
         return p
     raise RuntimeError("No shared folder available")
